@@ -28,6 +28,6 @@ export class CurrencyService {
 
     const applicableExchangeRate = exchangeRates[currentCurrency];
 
-    return amount * applicableExchangeRate;
+    return amount / applicableExchangeRate;
   }
 }
