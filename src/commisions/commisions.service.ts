@@ -2,10 +2,8 @@ import { CurrencyService } from './../currency/currency.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommisionRulesService } from './commision-rules.service';
 import { CommisionTurnoverService } from './commision-turnover.service';
-import {
-  CalculateCommisionDto,
-  SupportedCurrencies,
-} from './dto/calculate-commision.dto';
+import { CalculateCommisionDto } from './dto/calculate-commision.dto';
+import { SupportedCurrencies } from './types';
 
 @Injectable()
 export class CommisionsService {
@@ -16,7 +14,7 @@ export class CommisionsService {
     private currencyService: CurrencyService,
   ) {}
 
-  private transformAmount(amount: string) {
+  transformAmount(amount: string) {
     const amountAsNumber = parseFloat(amount);
     if (amountAsNumber <= 0) {
       throw new BadRequestException('Amount must be bigger than 0');
@@ -24,11 +22,7 @@ export class CommisionsService {
     return amountAsNumber;
   }
 
-  private transformCurrency(currency: string) {
-    return SupportedCurrencies[currency];
-  }
-
-  private handleCalculateSuccess(
+  handleCalculateSuccess(
     commisionFee: number,
     dateStr: string,
     amountInEuro: number,
@@ -52,7 +46,8 @@ export class CommisionsService {
     currency,
   }: CalculateCommisionDto) {
     const amountAsNumber = this.transformAmount(amount);
-    const currencyAsSupportedCurrencies = this.transformCurrency(currency);
+    const currencyAsSupportedCurrencies = currency as SupportedCurrencies;
+
     const amountInEuro = await this.currencyService.calculateToEuro(
       amountAsNumber,
       currencyAsSupportedCurrencies,
@@ -69,7 +64,7 @@ export class CommisionsService {
       lowestTurnoverAmount,
       client_id,
     );
-    console.log({ isTurnoverApplied });
+
     const lowestFeeAmount = this.commisionRulesService.getLowestAmountByFee(
       clientRules,
       isTurnoverApplied,

@@ -8,18 +8,18 @@ export class CommisionTurnoverService {
     number | undefined
   > = {};
 
-  private getMonthlyKeyForClient(dateStr: string, client_id: number) {
+  getMonthlyKeyForClient(dateStr: string, client_id: number) {
     return `${dateStr.slice(0, 7)}_${client_id}`;
   }
-  private getTransactionAmountByKey(key) {
+  getTransactionAmountByKey(key) {
     return this.transactionsAmountMonthly[key] || 0;
   }
 
   isTurnoverApplied(dateStr: string, turnoverValue: number, client_id: number) {
     const key = this.getMonthlyKeyForClient(dateStr, client_id);
     const amountBeforeTakingFee = this.getTransactionAmountByKey(key);
-    console.log(key, amountBeforeTakingFee);
-    return turnoverValue < amountBeforeTakingFee;
+
+    return turnoverValue <= amountBeforeTakingFee;
   }
 
   upsertMonthlyAmount(

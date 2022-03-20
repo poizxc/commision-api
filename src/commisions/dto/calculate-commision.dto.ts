@@ -6,12 +6,7 @@ import {
   IsString,
   IsEnum,
 } from 'class-validator';
-
-export enum SupportedCurrencies {
-  EUR = 'EUR',
-  USD = 'USD',
-  PLN = 'PLN',
-}
+import { SupportedCurrencies } from '../types';
 
 export class CalculateCommisionDto {
   @IsISO8601()
