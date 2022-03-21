@@ -1,17 +1,23 @@
 import { BigNumber } from 'bignumber.js';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 
 @Injectable()
 export class CommisionTurnoverService {
   //this should came from the DB but for this task requirements I will keep it inmemory
-  private readonly transactionsAmountMonthly: Record<
-    string,
-    BigNumber | undefined
-  > = {};
-
+  private transactionsAmountMonthly: Record<string, BigNumber | undefined> = {};
+  constructor(
+    @Optional()
+    @Inject('TRANSACTION_AMOUNT_MONTHLY')
+    transactionsAmountMonthly?: Record<string, BigNumber | undefined>,
+  ) {
+    if (transactionsAmountMonthly) {
+      this.transactionsAmountMonthly = transactionsAmountMonthly;
+    }
+  }
   getMonthlyKeyForClient(dateStr: string, client_id: number) {
     return `${dateStr.slice(0, 7)}_${client_id}`;
   }
+
   getTransactionAmountByKey(key) {
     return new BigNumber(this.transactionsAmountMonthly[key] || 0);
   }

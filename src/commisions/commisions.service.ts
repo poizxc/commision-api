@@ -54,11 +54,8 @@ export class CommisionsService {
       currencyAsSupportedCurrencies,
     );
 
-    const clientRules =
-      this.commisionRulesService.getAllRulesApplicableForClient(client_id);
-
     const lowestTurnoverAmount =
-      this.commisionRulesService.getLowestTurnover(clientRules);
+      this.commisionRulesService.getLowestTurnover(client_id);
 
     const isTurnoverApplied = this.commisionTurnoverService.isTurnoverApplied(
       date,
@@ -67,12 +64,12 @@ export class CommisionsService {
     );
 
     const lowestFeeAmount = this.commisionRulesService.getLowestAmountByFee(
-      clientRules,
+      client_id,
       isTurnoverApplied,
     );
 
     const isFixedAmount =
-      this.commisionRulesService.getIsFixedAmount(clientRules);
+      this.commisionRulesService.getIsFixedAmount(client_id);
 
     if (isFixedAmount) {
       return this.handleCalculateSuccess(
@@ -84,7 +81,7 @@ export class CommisionsService {
     }
 
     const LowestPercentageAmount =
-      this.commisionRulesService.getLowestAmountByPercentage(clientRules);
+      this.commisionRulesService.getLowestAmountByPercentage(client_id);
 
     const percentageFee = amountInEuro.multipliedBy(LowestPercentageAmount);
 

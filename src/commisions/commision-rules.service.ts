@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 
 export type Rule = {
   client_id: number | null;
@@ -30,7 +30,28 @@ export class CommisionRulesService {
     },
   ];
 
-  getLowestTurnover(clientRules: Rule[]) {
+  constructor(
+    @Optional()
+    @Inject('RULES')
+    rules?: Rule[],
+  ) {
+    if (rules) {
+      this.rules = rules;
+    }
+  }
+
+  getAllRulesApplicableForClient(client_id: number) {
+    return this.rules.reduce((acc, rule) => {
+      if (rule.client_id === client_id || rule.client_id === null) {
+        acc.push(rule);
+      }
+      return acc;
+    }, [] as Rule[]);
+  }
+
+  getLowestTurnover(clientId: number) {
+    const clientRules = this.getAllRulesApplicableForClient(clientId);
+
     return clientRules.reduce((lowest, rule) => {
       const turnoverAmount = new BigNumber(rule.turnoverAmount || Infinity);
       if (turnoverAmount.isLessThan(lowest)) {
@@ -40,7 +61,9 @@ export class CommisionRulesService {
     }, new BigNumber(Infinity));
   }
 
-  getLowestAmountByPercentage(clientRules: Rule[]) {
+  getLowestAmountByPercentage(clientId: number) {
+    const clientRules = this.getAllRulesApplicableForClient(clientId);
+
     return clientRules.reduce((lowest, rule) => {
       const feePercentage = new BigNumber(rule.feePercentage || Infinity);
       if (feePercentage.isLessThan(lowest)) {
@@ -50,7 +73,9 @@ export class CommisionRulesService {
     }, new BigNumber(Infinity));
   }
 
-  getLowestAmountByFee(clientRules: Rule[], isTurnoverApplied: boolean) {
+  getLowestAmountByFee(clientId: number, isTurnoverApplied: boolean) {
+    const clientRules = this.getAllRulesApplicableForClient(clientId);
+
     return clientRules.reduce((lowest, rule) => {
       const minimalFeeAmountAfterTurnover = new BigNumber(
         rule.minimalFeeAmountAfterTurnover || Infinity,
@@ -70,16 +95,8 @@ export class CommisionRulesService {
     }, new BigNumber(Infinity));
   }
 
-  getIsFixedAmount(clientRules: Rule[]) {
+  getIsFixedAmount(clientId: number) {
+    const clientRules = this.getAllRulesApplicableForClient(clientId);
     return Boolean(clientRules.find((rule: Rule) => rule.isFixedAmount));
-  }
-
-  getAllRulesApplicableForClient(client_id: number) {
-    return this.rules.reduce((acc, rule) => {
-      if (rule.client_id === client_id || rule.client_id === null) {
-        acc.push(rule);
-      }
-      return acc;
-    }, [] as Rule[]);
   }
 }
