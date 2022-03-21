@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import BigNumber from 'bignumber.js';
 import { CurrencyModule } from '../currency/currency.module';
 import { CommisionRulesService } from './commision-rules.service';
 import { CommisionTurnoverService } from './commision-turnover.service';
@@ -43,16 +44,16 @@ describe('CommisionsService', () => {
     });
 
     it('should return a number for positive value', () => {
-      expect(service.transformAmount('1')).toBe(1);
+      expect(service.transformAmount('1')).toEqual(new BigNumber(1));
     });
   });
 
   describe('handleCalculateSuccess method', () => {
-    it('should return amount as string representation on fixed number', () => {
+    it('should return amount as string representation of fixed number', () => {
       const args = {
-        commisionFee: 0.036,
+        commisionFee: new BigNumber(0.036),
         dateStr: 'string',
-        amountInEuro: 1,
+        amountInEuro: new BigNumber(1),
         client_id: 1,
       };
 
@@ -73,9 +74,9 @@ describe('CommisionsService', () => {
 
     it('should call upsertMonthlyAmount on commisionTurnoverService with correct Params', () => {
       const args = {
-        commisionFee: 0.036,
+        commisionFee: new BigNumber(0.036),
         date: 'string',
-        amountInEuro: 1,
+        amountInEuro: new BigNumber(1),
         client_id: 1,
       };
 

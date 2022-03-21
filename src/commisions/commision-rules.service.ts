@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js';
 import { Injectable } from '@nestjs/common';
 
 export type Rule = {
@@ -31,38 +32,42 @@ export class CommisionRulesService {
 
   getLowestTurnover(clientRules: Rule[]) {
     return clientRules.reduce((lowest, rule) => {
-      if (Number(rule.turnoverAmount) < lowest) {
-        return Number(rule.turnoverAmount);
+      const turnoverAmount = new BigNumber(rule.turnoverAmount || Infinity);
+      if (turnoverAmount.isLessThan(lowest)) {
+        return turnoverAmount;
       }
       return lowest;
-    }, Number.POSITIVE_INFINITY);
+    }, new BigNumber(Infinity));
   }
 
   getLowestAmountByPercentage(clientRules: Rule[]) {
     return clientRules.reduce((lowest, rule) => {
-      if (Number(rule.feePercentage) < lowest) {
-        return Number(rule.feePercentage);
+      const feePercentage = new BigNumber(rule.feePercentage || Infinity);
+      if (feePercentage.isLessThan(lowest)) {
+        return feePercentage;
       }
       return lowest;
-    }, Number.POSITIVE_INFINITY);
+    }, new BigNumber(Infinity));
   }
 
   getLowestAmountByFee(clientRules: Rule[], isTurnoverApplied: boolean) {
     return clientRules.reduce((lowest, rule) => {
-      const cheapestApplicableFeeForRule = Number(
-        isTurnoverApplied &&
-          Number(rule.minimalFeeAmountAfterTurnover) <
-            Number(rule.minimalFeeAmount)
-          ? rule.minimalFeeAmountAfterTurnover
-          : rule.minimalFeeAmount,
+      const minimalFeeAmountAfterTurnover = new BigNumber(
+        rule.minimalFeeAmountAfterTurnover || Infinity,
       );
+      const minimalFeeAmount = new BigNumber(rule.minimalFeeAmount || Infinity);
+      const cheapestApplicableFeeForRule =
+        isTurnoverApplied &&
+        minimalFeeAmountAfterTurnover.isLessThan(minimalFeeAmount)
+          ? minimalFeeAmountAfterTurnover
+          : minimalFeeAmount;
 
       if (cheapestApplicableFeeForRule < lowest) {
         return cheapestApplicableFeeForRule;
       }
 
       return lowest;
-    }, Number.POSITIVE_INFINITY);
+    }, new BigNumber(Infinity));
   }
 
   getIsFixedAmount(clientRules: Rule[]) {

@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';
@@ -26,7 +27,7 @@ describe('CurrencyService', () => {
 
   describe('CalculateToEuro method', () => {
     it('should return same value if currency is Euro', async () => {
-      const amountAsEuro = 222;
+      const amountAsEuro = new BigNumber(222);
       const result = await service.calculateToEuro(
         amountAsEuro,
         SupportedCurrencies.EUR,
@@ -36,8 +37,8 @@ describe('CurrencyService', () => {
     });
 
     it('should call getExchangeRates if currency is not Euro', async () => {
-      const amount = 4;
-      const expectedValue = 1;
+      const amount = new BigNumber(4);
+      const expectedValue = new BigNumber(1);
       const mockedExchangeRate = { PLN: 4 } as Record<
         'EUR' | 'USD' | 'PLN',
         number
@@ -58,7 +59,7 @@ describe('CurrencyService', () => {
     });
 
     it('should throw if wll not get correct exchange rate', async () => {
-      const amount = 4;
+      const amount = new BigNumber(4);
       const mockedFailedExchangeRate = {} as Record<
         'EUR' | 'USD' | 'PLN',
         number
@@ -74,7 +75,7 @@ describe('CurrencyService', () => {
     });
 
     it('should throw if exchange rate is 0', async () => {
-      const amount = 4;
+      const amount = new BigNumber(4);
       const mockedFailedExchangeRate = { PLN: 0 } as Record<
         'EUR' | 'USD' | 'PLN',
         number
@@ -87,6 +88,23 @@ describe('CurrencyService', () => {
       expect(
         service.calculateToEuro(amount, SupportedCurrencies.PLN),
       ).rejects.toThrowError();
+    });
+
+    it('should handle floating point precision', async () => {
+      const amount = new BigNumber(0.3);
+      const mockedFailedExchangeRate = { PLN: 0.1 } as Record<
+        'EUR' | 'USD' | 'PLN',
+        number
+      >;
+      const expectedValue = new BigNumber(3);
+
+      jest
+        .spyOn(service, 'getExchangeRates')
+        .mockResolvedValueOnce(mockedFailedExchangeRate);
+
+      expect(
+        await service.calculateToEuro(amount, SupportedCurrencies.PLN),
+      ).toEqual(expectedValue);
     });
   });
 

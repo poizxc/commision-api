@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, map } from 'rxjs';
 import { SupportedCurrencies } from '../commisions/types';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class CurrencyService {
@@ -21,7 +22,10 @@ export class CurrencyService {
     return supportedRates;
   }
 
-  async calculateToEuro(amount: number, currentCurrency: SupportedCurrencies) {
+  async calculateToEuro(
+    amount: BigNumber,
+    currentCurrency: SupportedCurrencies,
+  ) {
     if (currentCurrency === SupportedCurrencies.EUR) {
       return amount;
     }
@@ -32,6 +36,6 @@ export class CurrencyService {
     if (!applicableExchangeRate || applicableExchangeRate === 0) {
       throw new Error('cannot get exchange rate for given currency');
     }
-    return amount / applicableExchangeRate;
+    return amount.dividedBy(applicableExchangeRate);
   }
 }

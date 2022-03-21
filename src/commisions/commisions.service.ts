@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js';
 import { CurrencyService } from './../currency/currency.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommisionRulesService } from './commision-rules.service';
@@ -15,17 +16,17 @@ export class CommisionsService {
   ) {}
 
   transformAmount(amount: string) {
-    const amountAsNumber = parseFloat(amount);
-    if (amountAsNumber <= 0) {
+    const amountAsBigNumber = new BigNumber(amount);
+    if (amountAsBigNumber.isLessThanOrEqualTo(0)) {
       throw new BadRequestException('Amount must be bigger than 0');
     }
-    return amountAsNumber;
+    return amountAsBigNumber;
   }
 
   handleCalculateSuccess(
-    commisionFee: number,
+    commisionFee: BigNumber,
     dateStr: string,
-    amountInEuro: number,
+    amountInEuro: BigNumber,
     client_id: number,
   ) {
     this.commisionTurnoverService.upsertMonthlyAmount(
@@ -34,7 +35,7 @@ export class CommisionsService {
       client_id,
     );
     return {
-      amount: String(commisionFee.toFixed(2)),
+      amount: commisionFee.toFixed(2),
       currency: 'EUR',
     };
   }
@@ -45,11 +46,11 @@ export class CommisionsService {
     date,
     currency,
   }: CalculateCommisionDto) {
-    const amountAsNumber = this.transformAmount(amount);
+    const amountAsBigNumber = this.transformAmount(amount);
     const currencyAsSupportedCurrencies = currency as SupportedCurrencies;
 
     const amountInEuro = await this.currencyService.calculateToEuro(
-      amountAsNumber,
+      amountAsBigNumber,
       currencyAsSupportedCurrencies,
     );
 
@@ -85,10 +86,12 @@ export class CommisionsService {
     const LowestPercentageAmount =
       this.commisionRulesService.getLowestAmountByPercentage(clientRules);
 
-    const percentageFee = amountInEuro * LowestPercentageAmount;
+    const percentageFee = amountInEuro.multipliedBy(LowestPercentageAmount);
 
     return this.handleCalculateSuccess(
-      percentageFee < lowestFeeAmount ? lowestFeeAmount : percentageFee,
+      percentageFee.isLessThan(lowestFeeAmount)
+        ? lowestFeeAmount
+        : percentageFee,
       date,
       amountInEuro,
       client_id,
