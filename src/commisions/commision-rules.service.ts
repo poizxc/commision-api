@@ -12,7 +12,7 @@ export type Rule = {
 
 @Injectable()
 export class CommisionRulesService {
-  //this should came from the DB but for this task requirements I will keep it inmemory
+  //this should come from the DB but for this task requirements I will keep it in memory
   private readonly rules: Rule[] = [
     //applicable to  all clients
     {
