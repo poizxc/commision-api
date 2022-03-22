@@ -8,7 +8,6 @@ import { SupportedCurrencies } from './types';
 
 @Injectable()
 export class CommisionsService {
-  // in real world aplication this should come from DB, but for purposes of this recuritment task i will keep it as variable
   constructor(
     private commisionRulesService: CommisionRulesService,
     private commisionTurnoverService: CommisionTurnoverService,
